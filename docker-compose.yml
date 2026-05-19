@@ -1,0 +1,12 @@
+services:
+  opencode:
+    build: .
+    ports:
+      - "4096:4096"
+      - "1455:1455"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    restart: unless-stopped

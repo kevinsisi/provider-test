@@ -23,7 +23,7 @@ services:
     volumes:
       - ./web:/app:ro
     working_dir: /app
-    command: npx -y serve . -p 3000 -n
+    command: sh -c "npm config set strict-ssl false && npx -y serve . -p 3000 -n"
     depends_on:
       - opencode
     restart: unless-stopped

@@ -415,7 +415,7 @@
           <button id="auth-done-btn" style="padding:5px 14px;border:1px solid #34a853;border-radius:5px;background:#34a853;color:#fff;font-size:13px;cursor:pointer">✓ 完成驗證</button>
         `
         window.open(auth.url, '_blank')
-        document.getElementById('auth-done-btn').onclick = () => finishAuth(providerID)
+        document.getElementById('auth-done-btn').onclick = () => finishAuth(providerID, methodIndex)
 
       } catch (e) {
         authStatus.className = 'error'
@@ -424,49 +424,28 @@
       }
     }
 
-    async function finishAuth(providerID) {
+    async function finishAuth(providerID, methodIndex) {
       authStatus.className = 'waiting'
-      authStatus.textContent = '確認驗證狀態...'
+      authStatus.textContent = '儲存驗證 token...'
       try {
-        // Probe: send a tiny message to the provider to verify auth succeeded
-        const sessRes = await fetch(`${API}/session`, {
+        // Must call /oauth/callback to: save token to SQLite + stop OAuth server on port 1455
+        const res = await fetch(`${API}/provider/${providerID}/oauth/callback`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: '{}',
+          body: JSON.stringify({ method: methodIndex }),
         })
-        if (sessRes.ok) {
-          const sess = await sessRes.json()
-          // find first model from the target provider
-          const provRes = await fetch(`${API}/provider`)
-          const provData = await provRes.json()
-          const prov = provData.all.find(p => p.id === providerID)
-          const firstModel = Object.values(prov?.models || {})[0]
-          if (firstModel) {
-            const msgRes = await fetch(`${API}/session/${sess.id}/message`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                parts: [{ type: 'text', text: 'hi' }],
-                model: { providerID, modelID: firstModel.id },
-              }),
-            })
-            await fetch(`${API}/session/${sess.id}`, { method: 'DELETE' }).catch(() => {})
-            if (msgRes.ok) {
-              authStatus.className = 'done'
-              authStatus.textContent = `✓ ${providerID} 驗證成功！`
-              authStartBtn.disabled = false
-              authToggleBtn.classList.add('success')
-              await loadModels()
-              return
-            }
-            const errText = await msgRes.text()
-            throw new Error(`${msgRes.status}: ${errText}`)
-          }
+        if (!res.ok) {
+          const err = await res.text()
+          throw new Error(`${res.status}: ${err}`)
         }
-        throw new Error('無法確認驗證狀態')
+        authStatus.className = 'done'
+        authStatus.textContent = `✓ ${providerID} 驗證成功！`
+        authStartBtn.disabled = false
+        authToggleBtn.classList.add('success')
+        await loadModels()
       } catch (e) {
         authStatus.className = 'error'
-        authStatus.textContent = `驗證失敗：${e.message}`
+        authStatus.textContent = `儲存失敗：${e.message}`
         authStartBtn.disabled = false
       }
     }

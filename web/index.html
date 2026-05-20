@@ -15,27 +15,34 @@
       flex-direction: column;
     }
 
+    /* ── header ── */
     header {
       background: #fff;
       border-bottom: 1px solid #e0e0e0;
-      padding: 12px 16px;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 10px;
       flex-shrink: 0;
+      flex-wrap: wrap;
     }
 
-    header h1 { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+    header h1 { font-size: 15px; font-weight: 600; color: #1a1a1a; flex-shrink: 0; }
 
-    #model-label {
-      font-size: 12px;
-      color: #888;
-      background: #f0f0f0;
-      padding: 3px 8px;
-      border-radius: 12px;
+    #model-select {
+      flex: 1;
+      min-width: 160px;
+      max-width: 320px;
+      padding: 5px 8px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      font-size: 13px;
+      background: #fff;
+      cursor: pointer;
     }
+    #model-select:focus { outline: none; border-color: #1a73e8; }
 
-    #new-btn {
+    .header-btn {
       font-size: 13px;
       padding: 5px 12px;
       border: 1px solid #d0d0d0;
@@ -43,9 +50,61 @@
       background: #fff;
       cursor: pointer;
       color: #444;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
-    #new-btn:hover { background: #f5f5f5; }
+    .header-btn:hover { background: #f5f5f5; }
+    .header-btn.active { background: #e8f0fe; border-color: #1a73e8; color: #1a73e8; }
+    .header-btn.success { background: #e6f4ea; border-color: #34a853; color: #188038; }
 
+    /* ── auth panel ── */
+    #auth-panel {
+      display: none;
+      background: #fffde7;
+      border-bottom: 1px solid #f9e400;
+      padding: 12px 16px;
+      font-size: 13px;
+      gap: 10px;
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    #auth-panel.open { display: flex; }
+
+    #auth-panel .auth-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #auth-panel select {
+      padding: 4px 8px;
+      border: 1px solid #d0d0d0;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+
+    #auth-panel button {
+      padding: 5px 12px;
+      border: 1px solid #1a73e8;
+      border-radius: 5px;
+      background: #1a73e8;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    #auth-panel button:hover { background: #1558b0; }
+    #auth-panel button:disabled { background: #aaa; border-color: #aaa; cursor: not-allowed; }
+
+    #auth-status {
+      color: #555;
+      font-size: 12px;
+    }
+    #auth-status.waiting { color: #e65100; }
+    #auth-status.done { color: #188038; font-weight: 600; }
+    #auth-status.error { color: #d32f2f; }
+
+    /* ── messages ── */
     #messages {
       flex: 1;
       overflow-y: auto;
@@ -94,10 +153,15 @@
       border-radius: 8px;
       margin-bottom: 6px;
       object-fit: contain;
-      background: #000;
     }
-
     .msg.user .msg-image { border: 2px solid #1a73e8; }
+
+    .msg-model-tag {
+      font-size: 10px;
+      color: #aaa;
+      margin-top: 3px;
+      padding: 0 4px;
+    }
 
     .typing {
       display: flex;
@@ -122,6 +186,7 @@
       30% { transform: translateY(-6px); }
     }
 
+    /* ── input ── */
     #input-area {
       background: #fff;
       border-top: 1px solid #e0e0e0;
@@ -136,85 +201,46 @@
       margin-bottom: 8px;
     }
 
-    .preview-item {
-      position: relative;
-      display: inline-block;
-    }
-
+    .preview-item { position: relative; }
     .preview-item img {
-      width: 60px;
-      height: 60px;
+      width: 60px; height: 60px;
       object-fit: cover;
       border-radius: 6px;
       border: 1px solid #e0e0e0;
     }
-
     .preview-item button {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      width: 18px;
-      height: 18px;
+      position: absolute; top: -6px; right: -6px;
+      width: 18px; height: 18px;
       border-radius: 50%;
-      background: #666;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      font-size: 11px;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: #666; color: #fff; border: none; cursor: pointer;
+      font-size: 11px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
     }
 
-    #input-row {
-      display: flex;
-      gap: 8px;
-      align-items: flex-end;
-    }
+    #input-row { display: flex; gap: 8px; align-items: flex-end; }
 
     #image-btn {
-      flex-shrink: 0;
-      width: 38px;
-      height: 38px;
-      border: 1px solid #d0d0d0;
-      border-radius: 8px;
-      background: #fff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #555;
-      font-size: 18px;
+      flex-shrink: 0; width: 38px; height: 38px;
+      border: 1px solid #d0d0d0; border-radius: 8px;
+      background: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #555; font-size: 18px;
     }
     #image-btn:hover { background: #f5f5f5; }
 
     #text-input {
-      flex: 1;
-      padding: 9px 12px;
-      border: 1px solid #d0d0d0;
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: inherit;
-      resize: none;
-      outline: none;
-      max-height: 120px;
-      line-height: 1.4;
+      flex: 1; padding: 9px 12px;
+      border: 1px solid #d0d0d0; border-radius: 8px;
+      font-size: 14px; font-family: inherit;
+      resize: none; outline: none; max-height: 120px; line-height: 1.4;
     }
     #text-input:focus { border-color: #1a73e8; }
 
     #send-btn {
-      flex-shrink: 0;
-      width: 38px;
-      height: 38px;
-      border: none;
-      border-radius: 8px;
-      background: #1a73e8;
-      color: #fff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-shrink: 0; width: 38px; height: 38px;
+      border: none; border-radius: 8px;
+      background: #1a73e8; color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
     }
     #send-btn:hover { background: #1558b0; }
     #send-btn:disabled { background: #ccc; cursor: not-allowed; }
@@ -222,11 +248,8 @@
     #file-input { display: none; }
 
     .error-msg {
-      color: #d32f2f;
-      font-size: 12px;
-      padding: 6px 10px;
-      background: #fce4e4;
-      border-radius: 6px;
+      color: #d32f2f; font-size: 12px;
+      padding: 6px 10px; background: #fce4e4; border-radius: 6px;
       align-self: center;
     }
   </style>
@@ -234,9 +257,23 @@
 <body>
   <header>
     <h1>OpenCode Chat</h1>
-    <span id="model-label">deepseek-v4-flash-free</span>
-    <button id="new-btn">New Chat</button>
+    <select id="model-select"><option value="">載入中...</option></select>
+    <button id="auth-toggle-btn" class="header-btn">🔑 Connect</button>
+    <button id="new-btn" class="header-btn">New Chat</button>
   </header>
+
+  <div id="auth-panel">
+    <div class="auth-row">
+      <label style="font-weight:600">Provider</label>
+      <select id="auth-provider-select">
+        <option value="openai" data-method="0">OpenAI (ChatGPT Pro/Plus - browser)</option>
+        <option value="openai" data-method="1">OpenAI (ChatGPT Pro/Plus - headless)</option>
+        <option value="github-copilot" data-method="0">GitHub Copilot</option>
+      </select>
+      <button id="auth-start-btn">開始驗證</button>
+    </div>
+    <div id="auth-status"></div>
+  </div>
 
   <div id="messages"></div>
 
@@ -257,13 +294,20 @@
 
   <script>
     const API = 'http://localhost:4096'
-    const MODEL = { providerID: 'opencode', modelID: 'deepseek-v4-flash-free' }
+    const DEFAULT_MODEL = { providerID: 'opencode', modelID: 'deepseek-v4-flash-free' }
 
     let sessionId = null
     let pendingImages = []
     let busy = false
+    let authPollTimer = null
 
     const messagesEl = document.getElementById('messages')
+    const modelSelect = document.getElementById('model-select')
+    const authToggleBtn = document.getElementById('auth-toggle-btn')
+    const authPanel = document.getElementById('auth-panel')
+    const authProviderSelect = document.getElementById('auth-provider-select')
+    const authStartBtn = document.getElementById('auth-start-btn')
+    const authStatus = document.getElementById('auth-status')
     const textInput = document.getElementById('text-input')
     const sendBtn = document.getElementById('send-btn')
     const imageBtn = document.getElementById('image-btn')
@@ -271,14 +315,164 @@
     const previewArea = document.getElementById('image-preview-area')
     const newBtn = document.getElementById('new-btn')
 
-    // ── session ──────────────────────────────────────────────
+    // ── model ─────────────────────────────────────────────────
+
+    function selectedModel() {
+      const val = modelSelect.value
+      if (!val) return DEFAULT_MODEL
+      const [providerID, ...rest] = val.split('/')
+      return { providerID, modelID: rest.join('/') }
+    }
+
+    async function loadModels() {
+      try {
+        const res = await fetch(`${API}/provider`)
+        const data = await res.json()
+
+        // Focus on opencode (always free) + any provider user has authed
+        const SHOW_PROVIDERS = ['opencode', 'openai', 'github-copilot', 'google', 'anthropic']
+        const authRes = await fetch(`${API}/provider/auth`)
+        const authData = await authRes.json()
+        const authProviders = new Set(Object.keys(authData))
+
+        modelSelect.innerHTML = ''
+        let defaultSet = false
+
+        for (const provider of data.all) {
+          if (!SHOW_PROVIDERS.includes(provider.id)) continue
+          const modelEntries = Object.values(provider.models || {})
+          if (modelEntries.length === 0) continue
+
+          // For providers that need auth (in authData), only show if they have
+          // models that are accessible (we'll show them but they may fail at runtime)
+          const needsAuth = authProviders.has(provider.id)
+
+          const group = document.createElement('optgroup')
+          group.label = provider.name + (needsAuth ? ' 🔒' : ' ✓')
+
+          for (const model of modelEntries) {
+            const opt = document.createElement('option')
+            opt.value = `${provider.id}/${model.id}`
+            const cost = model.cost?.input === 0 ? ' (free)' : ''
+            opt.textContent = (model.name || model.id) + cost
+            if (!needsAuth && !defaultSet) {
+              opt.selected = true
+              defaultSet = true
+            }
+            group.appendChild(opt)
+          }
+          modelSelect.appendChild(group)
+        }
+      } catch (e) {
+        modelSelect.innerHTML = '<option value="">載入失敗</option>'
+        console.error('loadModels failed', e)
+      }
+    }
+
+    // ── oauth ─────────────────────────────────────────────────
+
+    authToggleBtn.addEventListener('click', () => {
+      const open = authPanel.classList.toggle('open')
+      authToggleBtn.classList.toggle('active', open)
+    })
+
+    authStartBtn.addEventListener('click', startAuth)
+
+    async function startAuth() {
+      const opt = authProviderSelect.selectedOptions[0]
+      const providerID = opt.value
+      const methodIndex = parseInt(opt.dataset.method, 10)
+
+      authStartBtn.disabled = true
+      authStatus.className = 'waiting'
+      authStatus.textContent = '正在取得驗證 URL...'
+
+      clearInterval(authPollTimer)
+
+      try {
+        const res = await fetch(`${API}/provider/${providerID}/oauth/authorize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ method: methodIndex }),
+        })
+
+        if (!res.ok) {
+          const err = await res.text()
+          throw new Error(`${res.status}: ${err}`)
+        }
+
+        const auth = await res.json()
+
+        if (!auth || !auth.url) {
+          authStatus.textContent = '此方法不需要跳轉，驗證已自動完成。'
+          authStatus.className = 'done'
+          await loadModels()
+          authStartBtn.disabled = false
+          return
+        }
+
+        authStatus.className = 'waiting'
+        authStatus.innerHTML = `
+          已在新分頁開啟驗證頁面。完成後模型清單將自動更新。<br>
+          <small style="color:#777">${auth.instructions || ''}</small>
+        `
+        window.open(auth.url, '_blank')
+        pollForAuth(providerID)
+
+      } catch (e) {
+        authStatus.className = 'error'
+        authStatus.textContent = `驗證失敗：${e.message}`
+        authStartBtn.disabled = false
+      }
+    }
+
+    function pollForAuth(providerID) {
+      let attempts = 0
+      const MAX = 60  // 2 min
+      authPollTimer = setInterval(async () => {
+        attempts++
+        if (attempts > MAX) {
+          clearInterval(authPollTimer)
+          authStatus.className = 'error'
+          authStatus.textContent = '等待逾時，請重試。'
+          authStartBtn.disabled = false
+          return
+        }
+        try {
+          // Probe: try to create a session with a tiny prompt using the target provider
+          // If auth is done, the provider will appear with more (non-filtered) models
+          const r = await fetch(`${API}/provider`)
+          const d = await r.json()
+          const prov = d.all.find(p => p.id === providerID)
+          const modelCount = Object.keys(prov?.models || {}).length
+          if (modelCount > 0) {
+            // Check if any model from this provider is now accessible by testing
+            // We use a lightweight check: see if the provider moved from needsAuth list
+            const authR = await fetch(`${API}/provider/auth`)
+            const authD = await authR.json()
+            if (!authD[providerID]) {
+              // Provider no longer in auth-required list = authenticated!
+              clearInterval(authPollTimer)
+              authStatus.className = 'done'
+              authStatus.textContent = `✓ ${providerID} 驗證成功！模型清單已更新。`
+              authStartBtn.disabled = false
+              authToggleBtn.classList.add('success')
+              await loadModels()
+              return
+            }
+          }
+        } catch (_) {}
+      }, 2000)
+    }
+
+    // ── session ───────────────────────────────────────────────
 
     async function ensureSession() {
       if (sessionId) return
       const res = await fetch(`${API}/session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: '{}',
       })
       if (!res.ok) throw new Error(`Create session failed: ${res.status}`)
       const data = await res.json()
@@ -290,9 +484,10 @@
       pendingImages = []
       messagesEl.innerHTML = ''
       previewArea.innerHTML = ''
+      clearInterval(authPollTimer)
     }
 
-    // ── image helpers ─────────────────────────────────────────
+    // ── image ─────────────────────────────────────────────────
 
     function fileToDataUrl(file) {
       return new Promise((resolve, reject) => {
@@ -315,8 +510,7 @@
         const removeBtn = document.createElement('button')
         removeBtn.textContent = '×'
         removeBtn.onclick = () => {
-          const idx = pendingImages.findIndex(p => p.url === dataUrl)
-          if (idx !== -1) pendingImages.splice(idx, 1)
+          pendingImages.splice(pendingImages.findIndex(p => p.url === dataUrl), 1)
           item.remove()
         }
         item.appendChild(img)
@@ -325,9 +519,9 @@
       }
     }
 
-    // ── render messages ───────────────────────────────────────
+    // ── render ────────────────────────────────────────────────
 
-    function appendMessage(role, parts) {
+    function appendMessage(role, parts, modelTag) {
       const wrap = document.createElement('div')
       wrap.className = `msg ${role}`
 
@@ -350,9 +544,15 @@
         }
       }
 
+      if (modelTag) {
+        const tag = document.createElement('div')
+        tag.className = 'msg-model-tag'
+        tag.textContent = modelTag
+        wrap.appendChild(tag)
+      }
+
       messagesEl.appendChild(wrap)
       messagesEl.scrollTop = messagesEl.scrollHeight
-      return wrap
     }
 
     function appendTyping() {
@@ -382,16 +582,15 @@
       busy = true
       sendBtn.disabled = true
 
+      const model = selectedModel()
       const parts = []
       for (const img of pendingImages) {
         parts.push({ type: 'file', mime: img.mime, filename: img.filename, url: img.url })
       }
       if (text) parts.push({ type: 'text', text })
 
-      // show user message
       appendMessage('user', parts)
 
-      // clear input
       textInput.value = ''
       pendingImages = []
       previewArea.innerHTML = ''
@@ -401,27 +600,20 @@
 
       try {
         await ensureSession()
-
         const res = await fetch(`${API}/session/${sessionId}/message`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ parts, model: MODEL }),
+          body: JSON.stringify({ parts, model }),
         })
-
         typing.remove()
-
         if (!res.ok) {
-          const err = await res.text()
-          appendError(`Error ${res.status}: ${err}`)
+          appendError(`Error ${res.status}: ${await res.text()}`)
           return
         }
-
         const data = await res.json()
-        const responseParts = (data.parts ?? []).filter(p => !p.synthetic)
-        const textParts = responseParts.filter(p => p.type === 'text')
-
+        const textParts = (data.parts ?? []).filter(p => p.type === 'text' && !p.synthetic)
         if (textParts.length > 0) {
-          appendMessage('assistant', textParts)
+          appendMessage('assistant', textParts, `${model.providerID}/${model.modelID}`)
         } else {
           appendError('No text response received.')
         }
@@ -435,42 +627,33 @@
       }
     }
 
-    // ── auto-resize textarea ──────────────────────────────────
+    // ── events ────────────────────────────────────────────────
 
     function autoResize() {
       textInput.style.height = 'auto'
       textInput.style.height = Math.min(textInput.scrollHeight, 120) + 'px'
     }
 
-    // ── events ────────────────────────────────────────────────
-
     sendBtn.addEventListener('click', send)
-
     textInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        send()
-      }
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
     })
-
     textInput.addEventListener('input', autoResize)
-
     imageBtn.addEventListener('click', () => fileInput.click())
-
     fileInput.addEventListener('change', async e => {
       await addPendingImages(Array.from(e.target.files))
       fileInput.value = ''
     })
-
     newBtn.addEventListener('click', resetSession)
-
-    // drag & drop images onto chat
     messagesEl.addEventListener('dragover', e => e.preventDefault())
     messagesEl.addEventListener('drop', async e => {
       e.preventDefault()
       const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))
       if (files.length > 0) await addPendingImages(files)
     })
+
+    // ── init ──────────────────────────────────────────────────
+    loadModels()
   </script>
 </body>
 </html>

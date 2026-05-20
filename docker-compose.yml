@@ -11,6 +11,9 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD:-}
       - NODE_TLS_REJECT_UNAUTHORIZED=0
+    volumes:
+      - opencode-data:/root/.local/share/opencode
+      - opencode-config:/root/.config/opencode
     restart: unless-stopped
 
   web:
@@ -24,3 +27,7 @@ services:
     depends_on:
       - opencode
     restart: unless-stopped
+
+volumes:
+  opencode-data:
+  opencode-config:

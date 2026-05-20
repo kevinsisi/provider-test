@@ -299,7 +299,6 @@
     let sessionId = null
     let pendingImages = []
     let busy = false
-    let authPollTimer = null
 
     const messagesEl = document.getElementById('messages')
     const modelSelect = document.getElementById('model-select')
@@ -387,8 +386,6 @@
       authStatus.className = 'waiting'
       authStatus.textContent = '正在取得驗證 URL...'
 
-      clearInterval(authPollTimer)
-
       try {
         const res = await fetch(`${API}/provider/${providerID}/oauth/authorize`, {
           method: 'POST',
@@ -413,11 +410,12 @@
 
         authStatus.className = 'waiting'
         authStatus.innerHTML = `
-          已在新分頁開啟驗證頁面。完成後模型清單將自動更新。<br>
-          <small style="color:#777">${auth.instructions || ''}</small>
+          已在新分頁開啟驗證頁面，請完成登入後點「完成驗證」。<br>
+          <small style="color:#777">${auth.instructions || ''}</small><br><br>
+          <button id="auth-done-btn" style="padding:5px 14px;border:1px solid #34a853;border-radius:5px;background:#34a853;color:#fff;font-size:13px;cursor:pointer">✓ 完成驗證</button>
         `
         window.open(auth.url, '_blank')
-        pollForAuth(providerID)
+        document.getElementById('auth-done-btn').onclick = () => finishAuth(providerID)
 
       } catch (e) {
         authStatus.className = 'error'
@@ -426,43 +424,51 @@
       }
     }
 
-    function pollForAuth(providerID) {
-      let attempts = 0
-      const MAX = 60  // 2 min
-      authPollTimer = setInterval(async () => {
-        attempts++
-        if (attempts > MAX) {
-          clearInterval(authPollTimer)
-          authStatus.className = 'error'
-          authStatus.textContent = '等待逾時，請重試。'
-          authStartBtn.disabled = false
-          return
-        }
-        try {
-          // Probe: try to create a session with a tiny prompt using the target provider
-          // If auth is done, the provider will appear with more (non-filtered) models
-          const r = await fetch(`${API}/provider`)
-          const d = await r.json()
-          const prov = d.all.find(p => p.id === providerID)
-          const modelCount = Object.keys(prov?.models || {}).length
-          if (modelCount > 0) {
-            // Check if any model from this provider is now accessible by testing
-            // We use a lightweight check: see if the provider moved from needsAuth list
-            const authR = await fetch(`${API}/provider/auth`)
-            const authD = await authR.json()
-            if (!authD[providerID]) {
-              // Provider no longer in auth-required list = authenticated!
-              clearInterval(authPollTimer)
+    async function finishAuth(providerID) {
+      authStatus.className = 'waiting'
+      authStatus.textContent = '確認驗證狀態...'
+      try {
+        // Probe: send a tiny message to the provider to verify auth succeeded
+        const sessRes = await fetch(`${API}/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}',
+        })
+        if (sessRes.ok) {
+          const sess = await sessRes.json()
+          // find first model from the target provider
+          const provRes = await fetch(`${API}/provider`)
+          const provData = await provRes.json()
+          const prov = provData.all.find(p => p.id === providerID)
+          const firstModel = Object.values(prov?.models || {})[0]
+          if (firstModel) {
+            const msgRes = await fetch(`${API}/session/${sess.id}/message`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                parts: [{ type: 'text', text: 'hi' }],
+                model: { providerID, modelID: firstModel.id },
+              }),
+            })
+            await fetch(`${API}/session/${sess.id}`, { method: 'DELETE' }).catch(() => {})
+            if (msgRes.ok) {
               authStatus.className = 'done'
-              authStatus.textContent = `✓ ${providerID} 驗證成功！模型清單已更新。`
+              authStatus.textContent = `✓ ${providerID} 驗證成功！`
               authStartBtn.disabled = false
               authToggleBtn.classList.add('success')
               await loadModels()
               return
             }
+            const errText = await msgRes.text()
+            throw new Error(`${msgRes.status}: ${errText}`)
           }
-        } catch (_) {}
-      }, 2000)
+        }
+        throw new Error('無法確認驗證狀態')
+      } catch (e) {
+        authStatus.className = 'error'
+        authStatus.textContent = `驗證失敗：${e.message}`
+        authStartBtn.disabled = false
+      }
     }
 
     // ── session ───────────────────────────────────────────────
@@ -484,7 +490,6 @@
       pendingImages = []
       messagesEl.innerHTML = ''
       previewArea.innerHTML = ''
-      clearInterval(authPollTimer)
     }
 
     // ── image ─────────────────────────────────────────────────

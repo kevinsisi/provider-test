@@ -439,7 +439,7 @@
           throw new Error(`${res.status}: ${err}`)
         }
         authStatus.className = 'done'
-        authStatus.textContent = `✓ ${providerID} 驗證成功！`
+        authStatus.innerHTML = `✓ ${providerID} 驗證成功！Token 已儲存。<br><small style="color:#555">請重啟 Container 後重整頁面，模型才會生效。<br><code>docker compose restart opencode</code></small>`
         authStartBtn.disabled = false
         authToggleBtn.classList.add('success')
         await loadModels()

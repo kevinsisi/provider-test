@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenCode Chat</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    header h1 { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+
+    #model-label {
+      font-size: 12px;
+      color: #888;
+      background: #f0f0f0;
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+
+    #new-btn {
+      font-size: 13px;
+      padding: 5px 12px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      color: #444;
+    }
+    #new-btn:hover { background: #f5f5f5; }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .msg { display: flex; flex-direction: column; max-width: 80%; }
+    .msg.user { align-self: flex-end; align-items: flex-end; }
+    .msg.assistant { align-self: flex-start; align-items: flex-start; }
+
+    .msg-role {
+      font-size: 11px;
+      color: #999;
+      margin-bottom: 4px;
+      padding: 0 4px;
+    }
+
+    .msg-bubble {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .msg.user .msg-bubble {
+      background: #1a73e8;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.assistant .msg-bubble {
+      background: #fff;
+      color: #1a1a1a;
+      border: 1px solid #e0e0e0;
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-image {
+      max-width: 280px;
+      max-height: 200px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .msg.user .msg-image { border: 2px solid #1a73e8; }
+
+    .typing {
+      display: flex;
+      gap: 4px;
+      padding: 12px 14px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      border-bottom-left-radius: 4px;
+      align-self: flex-start;
+    }
+    .typing span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #aaa;
+      animation: bounce 1.2s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: .2s; }
+    .typing span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
+
+    #input-area {
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 12px 16px;
+      flex-shrink: 0;
+    }
+
+    #image-preview-area {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .preview-item {
+      position: relative;
+      display: inline-block;
+    }
+
+    .preview-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .preview-item button {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #666;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 11px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #input-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    #image-btn {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      font-size: 18px;
+    }
+    #image-btn:hover { background: #f5f5f5; }
+
+    #text-input {
+      flex: 1;
+      padding: 9px 12px;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      max-height: 120px;
+      line-height: 1.4;
+    }
+    #text-input:focus { border-color: #1a73e8; }
+
+    #send-btn {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border: none;
+      border-radius: 8px;
+      background: #1a73e8;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #send-btn:hover { background: #1558b0; }
+    #send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    #file-input { display: none; }
+
+    .error-msg {
+      color: #d32f2f;
+      font-size: 12px;
+      padding: 6px 10px;
+      background: #fce4e4;
+      border-radius: 6px;
+      align-self: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>OpenCode Chat</h1>
+    <span id="model-label">deepseek-v4-flash-free</span>
+    <button id="new-btn">New Chat</button>
+  </header>
+
+  <div id="messages"></div>
+
+  <div id="input-area">
+    <div id="image-preview-area"></div>
+    <div id="input-row">
+      <button id="image-btn" title="Attach image">🖼</button>
+      <textarea id="text-input" placeholder="輸入訊息..." rows="1"></textarea>
+      <button id="send-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M1 1l14 7-14 7V9l10-1L1 7V1z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <input type="file" id="file-input" accept="image/*" multiple>
+
+  <script>
+    const API = 'http://localhost:4096'
+    const MODEL = { providerID: 'opencode', modelID: 'deepseek-v4-flash-free' }
+
+    let sessionId = null
+    let pendingImages = []
+    let busy = false
+
+    const messagesEl = document.getElementById('messages')
+    const textInput = document.getElementById('text-input')
+    const sendBtn = document.getElementById('send-btn')
+    const imageBtn = document.getElementById('image-btn')
+    const fileInput = document.getElementById('file-input')
+    const previewArea = document.getElementById('image-preview-area')
+    const newBtn = document.getElementById('new-btn')
+
+    // ── session ──────────────────────────────────────────────
+
+    async function ensureSession() {
+      if (sessionId) return
+      const res = await fetch(`${API}/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      if (!res.ok) throw new Error(`Create session failed: ${res.status}`)
+      const data = await res.json()
+      sessionId = data.id
+    }
+
+    function resetSession() {
+      sessionId = null
+      pendingImages = []
+      messagesEl.innerHTML = ''
+      previewArea.innerHTML = ''
+    }
+
+    // ── image helpers ─────────────────────────────────────────
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = e => resolve(e.target.result)
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+    }
+
+    async function addPendingImages(files) {
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue
+        const dataUrl = await fileToDataUrl(file)
+        pendingImages.push({ mime: file.type, filename: file.name, url: dataUrl })
+        const item = document.createElement('div')
+        item.className = 'preview-item'
+        const img = document.createElement('img')
+        img.src = dataUrl
+        const removeBtn = document.createElement('button')
+        removeBtn.textContent = '×'
+        removeBtn.onclick = () => {
+          const idx = pendingImages.findIndex(p => p.url === dataUrl)
+          if (idx !== -1) pendingImages.splice(idx, 1)
+          item.remove()
+        }
+        item.appendChild(img)
+        item.appendChild(removeBtn)
+        previewArea.appendChild(item)
+      }
+    }
+
+    // ── render messages ───────────────────────────────────────
+
+    function appendMessage(role, parts) {
+      const wrap = document.createElement('div')
+      wrap.className = `msg ${role}`
+
+      const roleLabel = document.createElement('div')
+      roleLabel.className = 'msg-role'
+      roleLabel.textContent = role === 'user' ? 'You' : 'Assistant'
+      wrap.appendChild(roleLabel)
+
+      for (const part of parts) {
+        if (part.type === 'file' && part.url) {
+          const img = document.createElement('img')
+          img.src = part.url
+          img.className = 'msg-image'
+          wrap.appendChild(img)
+        } else if (part.type === 'text' && part.text) {
+          const bubble = document.createElement('div')
+          bubble.className = 'msg-bubble'
+          bubble.textContent = part.text
+          wrap.appendChild(bubble)
+        }
+      }
+
+      messagesEl.appendChild(wrap)
+      messagesEl.scrollTop = messagesEl.scrollHeight
+      return wrap
+    }
+
+    function appendTyping() {
+      const el = document.createElement('div')
+      el.className = 'typing'
+      el.innerHTML = '<span></span><span></span><span></span>'
+      messagesEl.appendChild(el)
+      messagesEl.scrollTop = messagesEl.scrollHeight
+      return el
+    }
+
+    function appendError(msg) {
+      const el = document.createElement('div')
+      el.className = 'error-msg'
+      el.textContent = msg
+      messagesEl.appendChild(el)
+      messagesEl.scrollTop = messagesEl.scrollHeight
+    }
+
+    // ── send ──────────────────────────────────────────────────
+
+    async function send() {
+      if (busy) return
+      const text = textInput.value.trim()
+      if (!text && pendingImages.length === 0) return
+
+      busy = true
+      sendBtn.disabled = true
+
+      const parts = []
+      for (const img of pendingImages) {
+        parts.push({ type: 'file', mime: img.mime, filename: img.filename, url: img.url })
+      }
+      if (text) parts.push({ type: 'text', text })
+
+      // show user message
+      appendMessage('user', parts)
+
+      // clear input
+      textInput.value = ''
+      pendingImages = []
+      previewArea.innerHTML = ''
+      autoResize()
+
+      const typing = appendTyping()
+
+      try {
+        await ensureSession()
+
+        const res = await fetch(`${API}/session/${sessionId}/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ parts, model: MODEL }),
+        })
+
+        typing.remove()
+
+        if (!res.ok) {
+          const err = await res.text()
+          appendError(`Error ${res.status}: ${err}`)
+          return
+        }
+
+        const data = await res.json()
+        const responseParts = (data.parts ?? []).filter(p => !p.synthetic)
+        const textParts = responseParts.filter(p => p.type === 'text')
+
+        if (textParts.length > 0) {
+          appendMessage('assistant', textParts)
+        } else {
+          appendError('No text response received.')
+        }
+      } catch (e) {
+        typing.remove()
+        appendError(`Request failed: ${e.message}`)
+      } finally {
+        busy = false
+        sendBtn.disabled = false
+        textInput.focus()
+      }
+    }
+
+    // ── auto-resize textarea ──────────────────────────────────
+
+    function autoResize() {
+      textInput.style.height = 'auto'
+      textInput.style.height = Math.min(textInput.scrollHeight, 120) + 'px'
+    }
+
+    // ── events ────────────────────────────────────────────────
+
+    sendBtn.addEventListener('click', send)
+
+    textInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        send()
+      }
+    })
+
+    textInput.addEventListener('input', autoResize)
+
+    imageBtn.addEventListener('click', () => fileInput.click())
+
+    fileInput.addEventListener('change', async e => {
+      await addPendingImages(Array.from(e.target.files))
+      fileInput.value = ''
+    })
+
+    newBtn.addEventListener('click', resetSession)
+
+    // drag & drop images onto chat
+    messagesEl.addEventListener('dragover', e => e.preventDefault())
+    messagesEl.addEventListener('drop', async e => {
+      e.preventDefault()
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))
+      if (files.length > 0) await addPendingImages(files)
+    })
+  </script>
+</body>
+</html>

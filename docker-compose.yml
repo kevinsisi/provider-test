@@ -5,8 +5,20 @@ services:
       - "4096:4096"
       - "1455:1455"
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
+      - OPENCODE_CONFIG_CONTENT={"model":"opencode/deepseek-v4-flash-free","small_model":"opencode/deepseek-v4-flash-free"}
+      - OPENCODE_API_KEY=${OPENCODE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD:-}
       - NODE_TLS_REJECT_UNAUTHORIZED=0
+    restart: unless-stopped
+
+  web:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+    depends_on:
+      - opencode
     restart: unless-stopped

@@ -5,7 +5,7 @@ services:
       - "4096:4096"
       - "1455:1455"
     environment:
-      - OPENCODE_CONFIG_CONTENT={"model":"opencode/deepseek-v4-flash-free","small_model":"opencode/deepseek-v4-flash-free"}
+      - OPENCODE_CONFIG_CONTENT={"model":"opencode/mimo-v2.5-free","small_model":"opencode/mimo-v2.5-free"}
       - OPENCODE_API_KEY=${OPENCODE_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
